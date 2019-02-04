@@ -213,6 +213,7 @@ Happy hunting!
 - [ ] Fill in the `backlog` list with all the extra features listed below
 - [ ] Share your board with the project manager that has been assigned to you. If you have not been assigned yet, reach out to your lead PM for guidance
 - [ ] Add your Trello URL to your project's README.md file. Commit the change, push it to your repository & submit a pull request
+- My Trello URL: https://trello.com/invite/b/NkENqWkj/e017429d694b5f611152c45221319dbe/lambdamud-steven-oneill
 
 ## MVP Features:
 
