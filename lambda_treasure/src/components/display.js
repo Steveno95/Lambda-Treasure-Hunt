@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import axios from 'axios';
+import '../App.css'
 
 const config = {
     headers: {
@@ -17,6 +18,8 @@ class Display extends Component {
             title: "",
             description: "",
             messages: [],
+            players: [],
+            items: [],
             input: ""
         }
     };
@@ -32,6 +35,8 @@ class Display extends Component {
               room_id: res.data.room_id,
               title: res.data.title,
               description: res.data.description,
+              players: res.data.players,
+              items: res.data.items,
               messages: res.data.messages
             });
           }
@@ -65,6 +70,8 @@ class Display extends Component {
                   room_id: res.data.room_id,
                   title: res.data.title,
                   description: res.data.description,
+                  players: res.data.players,
+                  items: res.data.items,
                   messages: res.data.messages,
                   input: ""
                 });
@@ -80,13 +87,15 @@ class Display extends Component {
         const { input } = this.state
         
         return (
-            <div>
-                <h2>Coordinates: {this.state.coordinates}</h2>
-                <h2>Exits: {this.state.exits}</h2>
-                <h2>Room Id: {this.state.room_id}</h2>
-                <h2>Title: {this.state.title}</h2>
-                <h2>Description: {this.state.description}</h2>
-                <h2>Messages: {this.state.messages > 0 ? this.state.messages: "No messages"}</h2>
+            <div className="info-display">
+                <h3>Coordinates: {this.state.coordinates}</h3>
+                <h3>Exits: {this.state.exits}</h3>
+                <h3>Room Id: {this.state.room_id}</h3>
+                <h3>Title: {this.state.title}</h3>
+                <h3>Description: {this.state.description}</h3>
+                <h3>Items In Room: {this.state.items}</h3>
+                <h3>Messages: {this.state.messages}</h3>
+                <h3 className="players">Other Players: {this.state.players} </h3>
 
                 <form onSubmit={this.move}>
                     <label>Move n, s, e, w: </label>
