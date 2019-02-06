@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import '../App.css'
-import GraphMap from './map.js'
+//import GraphMap from './map.js'
 
 const config = {
     headers: {
@@ -107,9 +107,6 @@ class Display extends Component {
                     <input type="text" value={input} onChange={this.handleInputChange} />
                     <button type="submit">Move</button>
                 </form>
-                <div>
-                    <GraphMap />
-                </div>
             </div>
             
         );
