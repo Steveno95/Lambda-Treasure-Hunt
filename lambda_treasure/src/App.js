@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import './App.css';
-// import axios from 'axios';
 
 import Display from './components/display.js';
+// import GraphMap from './components/map.js';
 
 class App extends Component {
   render() {
@@ -10,6 +10,9 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <Display />
+          {/* <GraphMap /> */}
+          {/* <Route exact path='/' component={Display} />
+          <Route path='/graph' component={GraphMap} /> */}
         </header>
       </div>
     );

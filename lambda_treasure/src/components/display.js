@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
 import '../App.css'
+import GraphMap from './map.js'
 
 const config = {
     headers: {
@@ -14,7 +15,7 @@ class Display extends Component {
         this.state = {
             coordinates: "",
             exits: [],
-            room_id: "",
+            room_id: 0,
             title: "",
             description: "",
             messages: [],
@@ -23,7 +24,8 @@ class Display extends Component {
             input: ""
         }
     };
-    componentDidMount() {
+
+    init() {
         axios
         .get("https://lambda-treasure-hunt.herokuapp.com/api/adv/init", config)
         .then(res => {
@@ -44,6 +46,9 @@ class Display extends Component {
         .catch(err => {
           console.log(err);
         });
+    }
+    componentDidMount() {
+        this.init();
     }
 
     handleInputChange = e => {
@@ -102,7 +107,11 @@ class Display extends Component {
                     <input type="text" value={input} onChange={this.handleInputChange} />
                     <button type="submit">Move</button>
                 </form>
+                <div>
+                    <GraphMap />
+                </div>
             </div>
+            
         );
     }
 }
