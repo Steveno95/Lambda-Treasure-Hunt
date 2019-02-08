@@ -3,7 +3,7 @@ import axios from 'axios';
 import CreateMap from './visualization.js';
 import data from './traversalData.json'
 import StatusDisplay from './statusDisplay.js';
-
+import './components.css';
 
 const config = {
   headers: {
@@ -98,6 +98,7 @@ class GraphMap extends Component {
     this.setState({ allLinks: setLinks});
   }
 
+  
   traverseMap = () => {
     let unknownDirections = this.unexploredDirections();
     if (unknownDirections.length) {
@@ -315,6 +316,9 @@ class GraphMap extends Component {
       url: `${this.state.url}sell`,
       headers: {
         Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+      },
+      data: {
+        confirm: "yes"
       }
     })
       .then(res => {
@@ -378,20 +382,12 @@ class GraphMap extends Component {
   };
 
   handleClick = () => {
-    this.setState({ generating: true });
-    this.interval = setInterval(this.traverseMap, this.state.cooldown * 1000);
+    // this.setState({ generating: true });
+    // this.interval = setInterval(this.traverseMap, this.state.cooldown * 1000);
+    this.travelMap();
   };
 
-  moveToRoom = room =>{
-    let current = this.state.room_id
-    let current_coords = this.state.coords
-    let target_coords = this.state.graph[`${room}`][0]
-    let differencex = current_coords['x'] - target_coords['x']
-    let differencey = current_coords['y'] - target_coords['y']
-    console.log(differencex, differencey)
-
-  }
-
+  
   moveRooms = dir => {
     console.log("called!")
     let c = this.state.config
@@ -447,33 +443,38 @@ class GraphMap extends Component {
   render() {
     const { input, graph, encumbrance, strength, speed, inventory, gold, name } = this.state
     return (
-      <div className="App">
+      <div className="">
         <h2>Treasure Hunt</h2>
         { graph ? <CreateMap coordinates={this.state.allCoordinates} links={this.state.allLinks}/> : <div><p>graph loading</p></div> }
         <div className="side-menu">
-          <StatusDisplay 
-            name={name}
-            encumbrance={encumbrance}
-            strength={strength}
-            speed={speed}
-            gold={gold}
-            inventory={inventory}
-            input={input}
-            handleInput={this.handleInputChange}
-            manualMove={this.manualMove}
-            handleClick={this.handleClick}
-            pickUp={this.pickUpTreasure}
-            sell={this.sellTreasure}
-          />
-          <div className="control-menu">
+          <div className="status-dis">
+            <StatusDisplay 
+              name={name}
+              encumbrance={encumbrance}
+              strength={strength}
+              speed={speed}
+              gold={gold}
+              inventory={inventory}
+              input={input}
+              handleInput={this.handleInputChange}
+              manualMove={this.manualMove}
+              handleClick={this.handleClick}
+              pickUp={this.pickUpTreasure}
+              sell={this.sellTreasure}
+            />
+          </div>
+          
+          <div className="room-display">
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
-            <p><strong>Players:</strong> {this.state.players.map(player => <li>{player}</li>)}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Coordinates: </strong> x:{this.state.coords['x']}, y:{this.state.coords['y']}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Cooldown:</strong> {this.state.cooldown}</p>
             <p><strong>Items:</strong> {this.state.items}</p>
             <p><strong>Messages:</strong> {this.state.messages}</p>
+          </div>
+          <div className="player-dis">
+            <p><strong>Players:</strong> {this.state.players.map(player => <li>{player}</li>)}</p>
           </div>
         </div>
       </div>

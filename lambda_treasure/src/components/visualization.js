@@ -9,8 +9,8 @@ import { FlexibleXYPlot, LineSeries, MarkSeries } from "react-vis";
       <div 
       style={{
         margin: 'auto',
-        width: '900px',
-        height: '900px',
+        width: '700px',
+        height: '700px',
         flex: 1,
         padding: '2rem 4rem'
       }}

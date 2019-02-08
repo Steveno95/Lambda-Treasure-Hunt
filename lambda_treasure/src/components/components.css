@@ -1,0 +1,25 @@
+.side-menu {
+    display: flex;
+    margin-left: 6%;
+    margin-bottom: 50px;
+}
+.status-dis {
+    width: 30%;
+}
+
+.room-display {
+    width: 33%;
+}
+
+.player-dis {
+    width: 33%;
+    margin: 0;
+}
+
+.btn {
+    width: 100px;
+    height: 30px;
+    margin-top: 20px;
+    margin-left: 15px;
+  }
+  
