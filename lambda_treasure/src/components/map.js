@@ -452,6 +452,10 @@ class GraphMap extends Component {
             speed={speed}
             gold={gold}
             inventory={inventory}
+            input={input}
+            handleInput={this.handleInputChange}
+            manualMove={this.manualMove}
+            handleClick={this.handleClick}
           />
           <div className="control-menu">
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
@@ -460,14 +464,8 @@ class GraphMap extends Component {
             <p><strong>Coordinates: </strong> x:{this.state.coords['x']}, y:{this.state.coords['y']}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Cooldown:</strong> {this.state.cooldown}</p>
-            <form onSubmit={this.manualMove}>
-               <label>Move n, s, e, w: </label>
-               <input type="text" value={input} onChange={this.handleInputChange} />
-               <button type="submit">Move</button>
-            </form>
-            <button className="btn" onClick={this.handleClick}>
-              Traverse
-            </button>
+            
+            
           </div>
         </div>
       </div>
