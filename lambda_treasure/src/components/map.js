@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import axios from 'axios';
-// import styled from 'styled-components';
-// import logo from '../images/logo.png';
-// import { isNull } from 'util';
+import CreateMap from './visualization.js';
+import data from './traversalData.json'
 
 class GraphMap extends Component {
   state = {
@@ -21,17 +20,52 @@ class GraphMap extends Component {
     progress: 0,
     room_id: 0,
     visited: new Set(),
-    input : ''
+    input : '',
+    allCoordinates: [],
+    allLinks: [],
+    mapCoords: [],
+    graphLoaded: false,
   }
 
   componentDidMount() {
     // finds map in local storage and saves it to graph object
     if (localStorage.hasOwnProperty('map')) {
       let value = JSON.parse(localStorage.getItem('map'));
-      this.setState({ graph: value });
+      this.setState({ graph: value, graphLoaded: true });
+    } else {
+      localStorage.setItem('map', JSON.stringify(data));
+      let value = JSON.parse(localStorage.getItem('map'));
+      this.setState({ graph: value, graphLoaded: true });
     }
 
     this.initReq();
+  }
+
+  componentDidUpdate(prevState) {
+    if (!this.state.allCoordinates.length && this.state.graph) {
+      this.mapLinks();
+      this.mapCoordinates();
+    }
+  }
+
+  mapCoordinates = () => {
+    const { graph } = this.state;
+    const setCoordinates = [];
+    for (let room in graph) {
+      setCoordinates.push(graph[room][0]);
+    }
+    this.setState({ allCoordinates: setCoordinates });
+  }
+
+  mapLinks = () => {
+    const { graph } = this.state;
+    const setLinks = [];
+    for(let room in graph){
+      for (let linkedRoom in graph[room][1]) {
+        setLinks.push([graph[room][0], graph[graph[room][1][linkedRoom]][0]]);
+      }
+    } 
+    this.setState({ allLinks: setLinks});
   }
 
   traverseMap = () => {
@@ -316,14 +350,19 @@ class GraphMap extends Component {
   };
 
   render() {
-    const { input } = this.state
+    const { input, graph } = this.state
     return (
       <div className="App">
+        {/* {graph ? (
+          <CreateMap coords={this.state.allCoords} links={this.state.allLinks} />
+        ) : (
+          <div>Loading</div>
+        )} */}
         <div className="side-menu">
           <div className="control-menu">
             <h2>Room Details</h2>
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
-            <p><strong>Players:</strong> <ol>{this.state.players.map(player => <li>{player}</li>)}</ol></p>
+            <p><strong>Players:</strong> {this.state.players.map(player => <li>{player}</li>)}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Coordinates: </strong> x:{this.state.coords['x']}, y:{this.state.coords['y']}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
@@ -336,6 +375,7 @@ class GraphMap extends Component {
             <button className="btn" onClick={this.handleClick}>
               Traverse
             </button>
+            { graph ? <CreateMap coordinates={this.state.allCoordinates} links={this.state.allLinks}/> : <div><p>graph loading</p></div> }
           </div>
         </div>
       </div>
