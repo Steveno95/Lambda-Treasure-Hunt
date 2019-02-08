@@ -17,6 +17,11 @@ const StatusDisplay = props => (
         <button className="btn" onClick={props.handleClick}>
             Traverse
         </button>
+        <button className="btn" onClick={props.pickUp}>
+            Pick Up
+        </button><button className="btn" onClick={props.sell}>
+            Sell
+        </button>
     </div>
 );
 

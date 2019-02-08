@@ -28,6 +28,7 @@ class GraphMap extends Component {
       path: [],
       progress: 0,
       room_id: 0,
+      items: [],
       visited: new Set(),
       input : '',
       allCoordinates: [],
@@ -40,7 +41,6 @@ class GraphMap extends Component {
       speed: null,
       gold: null,
       inventory: [],
-
     }
   }
   
@@ -251,7 +251,12 @@ class GraphMap extends Component {
           room_id: res.data.room_id,
           coords: this.parseCoords(res.data.coordinates),
           exits: [...res.data.exits],
-          ooldown: res.data.cooldown,
+          cooldown: res.data.cooldown,
+          title: res.data.title,
+          description: res.data.description,
+          players: res.data.players,
+          items: res.data.items,
+          messages: res.data.messages,
           graph
         }));
         this.updateVisited();
@@ -437,6 +442,7 @@ class GraphMap extends Component {
         return;
     }
   };
+  
 
   render() {
     const { input, graph, encumbrance, strength, speed, inventory, gold, name } = this.state
@@ -456,6 +462,8 @@ class GraphMap extends Component {
             handleInput={this.handleInputChange}
             manualMove={this.manualMove}
             handleClick={this.handleClick}
+            pickUp={this.pickUpTreasure}
+            sell={this.sellTreasure}
           />
           <div className="control-menu">
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
@@ -464,8 +472,8 @@ class GraphMap extends Component {
             <p><strong>Coordinates: </strong> x:{this.state.coords['x']}, y:{this.state.coords['y']}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Cooldown:</strong> {this.state.cooldown}</p>
-            
-            
+            <p><strong>Items:</strong> {this.state.items}</p>
+            <p><strong>Messages:</strong> {this.state.messages}</p>
           </div>
         </div>
       </div>
