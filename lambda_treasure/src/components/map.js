@@ -2,30 +2,48 @@ import React, { Component } from 'react';
 import axios from 'axios';
 import CreateMap from './visualization.js';
 import data from './traversalData.json'
+import StatusDisplay from './statusDisplay.js';
+
+
+const config = {
+  headers: {
+    Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+  }
+};
 
 class GraphMap extends Component {
-  state = {
-    url : "https://lambda-treasure-hunt.herokuapp.com/api/adv/",
-    config: { headers: { "Authorization":"Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"}},
-    coords: { x: 50, y: 60 },
-    cooldown: 5,
-    error: '',
-    exits: [],
-    players : [],
-    generating: false,
-    graph: {},
-    revDirections: { n: 's', s: 'n', w: 'e', e: 'w' },
-    message: '',
-    path: [],
-    progress: 0,
-    room_id: 0,
-    visited: new Set(),
-    input : '',
-    allCoordinates: [],
-    allLinks: [],
-    mapCoords: [],
-    graphLoaded: false,
+  constructor(props) {
+    super(props);
+    this.state = {
+      url : "https://lambda-treasure-hunt.herokuapp.com/api/adv/",
+      coords: { x: 50, y: 60 },
+      cooldown: 5,
+      error: '',
+      exits: [],
+      players : [],
+      generating: false,
+      graph: {},
+      revDirections: { n: 's', s: 'n', w: 'e', e: 'w' },
+      message: '',
+      path: [],
+      progress: 0,
+      room_id: 0,
+      visited: new Set(),
+      input : '',
+      allCoordinates: [],
+      allLinks: [],
+      mapCoords: [],
+      graphLoaded: false,
+      name: '',
+      encumbrance: null,
+      strength: null,
+      speed: null,
+      gold: null,
+      inventory: [],
+
+    }
   }
+  
 
   componentDidMount() {
     // finds map in local storage and saves it to graph object
@@ -38,7 +56,7 @@ class GraphMap extends Component {
       this.setState({ graph: value, graphLoaded: true });
     }
 
-    this.initReq();
+    this.getInfo();
   }
 
   componentDidUpdate(prevState) {
@@ -46,6 +64,18 @@ class GraphMap extends Component {
       this.mapLinks();
       this.mapCoordinates();
     }
+  }
+
+  getInfo = async () => {
+      await this.initReq();
+      await this.timeOut(1000 * this.state.cooldown);
+      await this.status();
+  }
+
+  timeOut = async ms => {
+    return new Promise(resolve => {
+      setTimeout(resolve, ms)
+    })
   }
 
   mapCoordinates = () => {
@@ -176,7 +206,7 @@ class GraphMap extends Component {
     try {
       const response = await axios({
         method: 'post',
-        url: `https://lambda-treasure-hunt.herokuapp.com/api/adv/move/`,
+        url: `${this.state.url}move`,
         headers: {
           Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
         },
@@ -209,7 +239,7 @@ class GraphMap extends Component {
   };
 
   initReq = () => {
-    axios.get(`${this.state.url}init`, this.state.config)
+    axios.get(`${this.state.url}init`, config)
       .then(res => {
         this.updateState(res.data)
         let graph = this.updateGraph(
@@ -228,6 +258,70 @@ class GraphMap extends Component {
       })
       .catch(err => console.log('There was an error.'));
   };
+
+  status = () => {
+    axios({
+      method: 'post',
+      url: `${this.state.url}status`,
+      headers: {
+        Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+      }
+    })
+      .then(res => {
+        console.log(res.data);
+        this.setState(prevState => ({
+          name: res.data.name,
+          encumbrance: res.data.encumbrance,
+          strength: res.data.strength,
+          speed: res.data.speed,
+          gold: res.data.gold,
+          inventory: [...res.data.inventory],
+          status: [...res.data.status],
+          errors: [...res.data.errors]
+        }));
+      })
+      .catch(err => {
+        console.log("Error", err);
+      });
+  }
+
+  pickUpTreasure = () => {
+    axios({
+      method: 'post',
+      url: `${this.state.url}take`,
+      headers: {
+        Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+      }
+    })
+      .then(res => {
+        console.log(res.data);
+        this.setState({
+          messages: res.data.messages,
+          items: res.data.items,
+          players: res.data.players
+        }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
+      })
+      .catch(err => { console.log("Error", err) });
+  }
+
+  sellTreasure = () => {
+    axios({
+      method: 'post',
+      url: `${this.state.url}sell`,
+      headers: {
+        Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+      }
+    })
+      .then(res => {
+        this.setState({
+          messages: res.data.messages,
+          cooldown: res.data.cooldown
+        }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
+      })
+      .catch(err => { console.log("Error", err) });
+  }
+
+  
 
   updateGraph = (id, coords, exits, prev = null, move = null) => {
     const { revDirections } = this.state;
@@ -315,11 +409,6 @@ class GraphMap extends Component {
     e.preventDefault();
     const { input } = this.state;
     const data_input = { direction: input };
-    const config = {
-      headers: {
-          Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
-      }
-    };
     
     switch (input.toLowerCase()) {
       case "n":
@@ -327,7 +416,7 @@ class GraphMap extends Component {
       case "e":
       case "w":
         axios
-          .post("https://lambda-treasure-hunt.herokuapp.com/api/adv/move/", data_input, config)
+          .post(`${this.state.url}move`, data_input, config)
           .then(res => {
             console.log("POST res.data", res.data);
             this.setState({
@@ -350,17 +439,21 @@ class GraphMap extends Component {
   };
 
   render() {
-    const { input, graph } = this.state
+    const { input, graph, encumbrance, strength, speed, inventory, gold, name } = this.state
     return (
       <div className="App">
-        {/* {graph ? (
-          <CreateMap coords={this.state.allCoords} links={this.state.allLinks} />
-        ) : (
-          <div>Loading</div>
-        )} */}
+        <h2>Treasure Hunt</h2>
+        { graph ? <CreateMap coordinates={this.state.allCoordinates} links={this.state.allLinks}/> : <div><p>graph loading</p></div> }
         <div className="side-menu">
+          <StatusDisplay 
+            name={name}
+            encumbrance={encumbrance}
+            strength={strength}
+            speed={speed}
+            gold={gold}
+            inventory={inventory}
+          />
           <div className="control-menu">
-            <h2>Room Details</h2>
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
             <p><strong>Players:</strong> {this.state.players.map(player => <li>{player}</li>)}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
@@ -375,7 +468,6 @@ class GraphMap extends Component {
             <button className="btn" onClick={this.handleClick}>
               Traverse
             </button>
-            { graph ? <CreateMap coordinates={this.state.allCoordinates} links={this.state.allLinks}/> : <div><p>graph loading</p></div> }
           </div>
         </div>
       </div>

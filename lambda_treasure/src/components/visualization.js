@@ -9,12 +9,12 @@ import { FlexibleXYPlot, LineSeries, MarkSeries } from "react-vis";
       <div 
       style={{
         margin: 'auto',
-        width: '500px',
-        height: '500px',
+        width: '900px',
+        height: '900px',
         flex: 1,
         padding: '2rem 4rem'
       }}
-      > <p>Map should look like</p>
+      >
         <FlexibleXYPlot>
           {this.props.links.map(link => (
             <LineSeries strokeWidth="3" color="#E5E5E5" data={link} key={Math.random() * 100} />
