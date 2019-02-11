@@ -1,7 +1,8 @@
 import React from "react";
 import { FlexibleXYPlot, LineSeries, MarkSeries } from "react-vis";
 
- class CreateMap extends React.Component {
+// renders the map using react vis 
+class CreateMap extends React.Component {
   state = {};
 
   render() {

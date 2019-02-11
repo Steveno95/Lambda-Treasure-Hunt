@@ -1,6 +1,7 @@
 import React from 'react';
 import './components.css';
 
+// displays the status of a player 
 const StatusDisplay = props => (
     <div>
         <p><strong>Name: </strong>{props.name}</p>
@@ -15,9 +16,9 @@ const StatusDisplay = props => (
             <input type="text" value={props.input} onChange={props.handleInput} />
             <button className="submit-btn" type="submit">Move</button>
         </form>
-        {/* <button className="btn" onClick={props.handleClick}>
-            Travel Map
-        </button> */}
+        <button className="btn" onClick={props.handleClick}>
+            Traverse Map
+        </button><br/>
         <button className="btn" onClick={props.pickUp}>
             Pick Up
         </button><button className="btn" onClick={props.sell}>

@@ -459,7 +459,7 @@ class GraphMap extends Component {
   };
 
   handleClick = () => {
-    this.travelMap();
+    this.traverseMap();
   };
 
   handleInputChange = e => {
