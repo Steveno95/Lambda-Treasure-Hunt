@@ -291,45 +291,71 @@ class GraphMap extends Component {
       });
   }
 
-  pickUpTreasure = () => {
+  pickUpAllTreasure = async () => {
+    const { items, cooldown } = this.state;
+    await this.timeOut(1000 * cooldown);
+    await this.pickUpTreasure(items[0]);
+    await this.timeOut(1000 * cooldown);
+  };
+
+  pickUpTreasure = name => {
     axios({
       method: 'post',
-      url: `${this.state.url}take`,
+      url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/take/',
       headers: {
-        Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
+        Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
+      },
+      data: {
+        name
       }
     })
       .then(res => {
         console.log(res.data);
         this.setState({
-          messages: res.data.messages,
-          items: res.data.items,
-          players: res.data.players
-        }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
-      })
-      .catch(err => { console.log("Error", err) });
-  }
-
-  sellTreasure = () => {
-    axios({
-      method: 'post',
-      url: `${this.state.url}sell`,
-      headers: {
-        Authorization: "Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a"
-      },
-      data: {
-        confirm: "yes"
-      }
-    })
-      .then(res => {
-        this.setState({
-          messages: res.data.messages,
+          messages: [...res.data.messages],
+          items: [...res.data.items],
+          players: [...res.data.players],
           cooldown: res.data.cooldown
         }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
       })
       .catch(err => { console.log("Error", err) });
-  }
+  };
 
+  sellEverything = async () => {
+    const { inventory, cooldown } = this.state;
+    for (let treasure of inventory) {
+      await this.timeOut(1000 * cooldown);
+      await this.sellTreasure(treasure);
+    }
+    await this.timeOut(1000 * cooldown);
+    this.status();
+  };
+
+  sellTreasure = name => {
+    axios({
+      method: 'post',
+      url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/',
+      headers: {
+        Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
+      },
+      data: {
+        name,
+        confirm: 'yes'
+      }
+    })
+      .then(res => {
+        console.log(res.data);
+        this.setState(
+          {
+            messages: [...res.data.messages],
+            cooldown: res.data.cooldown
+          }
+        );
+      })
+      .catch(err => {
+        console.log('There was an error.', err);
+      });
+  };
   
 
   updateGraph = (id, coords, exits, prev = null, move = null) => {
@@ -385,21 +411,6 @@ class GraphMap extends Component {
     // this.setState({ generating: true });
     // this.interval = setInterval(this.traverseMap, this.state.cooldown * 1000);
     this.travelMap();
-  };
-
-  
-  moveRooms = dir => {
-    console.log("called!")
-    let c = this.state.config
-    // had to do this to call it in post request
-    axios.post(`${this.state.url}move`, {direction: dir}, c)
-    .then(res => {
-      console.log(res.data)
-      this.updateState(res.data)
-    })
-    .catch(err => {
-      console.log(err);
-    });
   };
 
   handleInputChange = e => {
@@ -459,13 +470,15 @@ class GraphMap extends Component {
               handleInput={this.handleInputChange}
               manualMove={this.manualMove}
               handleClick={this.handleClick}
-              pickUp={this.pickUpTreasure}
-              sell={this.sellTreasure}
+              pickUp={this.pickUpAllTreasure}
+              sell={this.sellEverything}
             />
           </div>
           
           <div className="room-display">
             <p><strong>Room ID: </strong>{this.state.room_id}</p>
+            <p><strong>Title: </strong>{this.state.title}</p>
+            <p><strong>Description: </strong>{this.state.description}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
             <p><strong>Coordinates: </strong> x:{this.state.coords['x']}, y:{this.state.coords['y']}</p>
             <p><strong>Exits:</strong> {this.state.exits}</p>
