@@ -45,6 +45,7 @@ class GraphMap extends Component {
   }
   
 
+  // life cycle methods
   componentDidMount() {
     // finds map in local storage and saves it to graph object
     if (localStorage.hasOwnProperty('map')) {
@@ -66,18 +67,21 @@ class GraphMap extends Component {
     }
   }
 
+  //init method
   getInfo = async () => {
       await this.initReq();
       await this.timeOut(1000 * this.state.cooldown);
       await this.status();
   }
 
+  // wraps setTimeout in a promise turning into a async function
   timeOut = async ms => {
     return new Promise(resolve => {
       setTimeout(resolve, ms)
     })
   }
 
+  // uses the graph data and puts the info needed into an array to be used by the visualization component
   mapCoordinates = () => {
     const { graph } = this.state;
     const setCoordinates = [];
@@ -87,6 +91,7 @@ class GraphMap extends Component {
     this.setState({ allCoordinates: setCoordinates });
   }
 
+  // used by the visualization component for edges
   mapLinks = () => {
     const { graph } = this.state;
     const setLinks = [];
@@ -98,7 +103,7 @@ class GraphMap extends Component {
     this.setState({ allLinks: setLinks});
   }
 
-  
+  // automated traversal 
   traverseMap = () => {
     let unknownDirections = this.unexploredDirections();
     if (unknownDirections.length) {
@@ -128,6 +133,7 @@ class GraphMap extends Component {
     this.updateVisited();
   };
 
+  // keeps track of how many nodes were explored
   updateVisited = () => {
     // UPDATE PROGRESS
     let visited = new Set(this.state.set);
@@ -148,6 +154,7 @@ class GraphMap extends Component {
     this.setState({ visited, progress });
   };
 
+  // bfs to find shortest path
   shortestPath = (start = this.state.room_id, target = '?') => {
     let { graph } = this.state;
     let queue = [];
@@ -181,6 +188,7 @@ class GraphMap extends Component {
     }
   };
 
+  // gets unknown directions to a node in the graph
   unexploredDirections = () => {
     let unknownDirections = [];
     let directions = this.state.graph[this.state.room_id][1];
@@ -192,6 +200,7 @@ class GraphMap extends Component {
     return unknownDirections;
   };
 
+  // Method that calls api
   moveRoomsByID = async (move, next_room_id = null) => {
     let data;
     if (next_room_id) {
@@ -239,6 +248,7 @@ class GraphMap extends Component {
     }
   };
 
+  // Method that calls api
   initReq = () => {
     axios.get(`${this.state.url}init`, config)
       .then(res => {
@@ -265,6 +275,7 @@ class GraphMap extends Component {
       .catch(err => console.log('There was an error.'));
   };
 
+  // Method that calls api
   status = () => {
     axios({
       method: 'post',
@@ -291,132 +302,7 @@ class GraphMap extends Component {
       });
   }
 
-  pickUpAllTreasure = async () => {
-    const { items, cooldown } = this.state;
-    await this.timeOut(1000 * cooldown);
-    await this.pickUpTreasure(items[0]);
-    await this.timeOut(1000 * cooldown);
-  };
-
-  pickUpTreasure = name => {
-    axios({
-      method: 'post',
-      url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/take/',
-      headers: {
-        Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
-      },
-      data: {
-        name
-      }
-    })
-      .then(res => {
-        console.log(res.data);
-        this.setState({
-          messages: [...res.data.messages],
-          items: [...res.data.items],
-          players: [...res.data.players],
-          cooldown: res.data.cooldown
-        }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
-      })
-      .catch(err => { console.log("Error", err) });
-  };
-
-  sellEverything = async () => {
-    const { inventory, cooldown } = this.state;
-    for (let treasure of inventory) {
-      await this.timeOut(1000 * cooldown);
-      await this.sellTreasure(treasure);
-    }
-    await this.timeOut(1000 * cooldown);
-    this.status();
-  };
-
-  sellTreasure = name => {
-    axios({
-      method: 'post',
-      url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/',
-      headers: {
-        Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
-      },
-      data: {
-        name,
-        confirm: 'yes'
-      }
-    })
-      .then(res => {
-        console.log(res.data);
-        this.setState(
-          {
-            messages: [...res.data.messages],
-            cooldown: res.data.cooldown
-          }
-        );
-      })
-      .catch(err => {
-        console.log('There was an error.', err);
-      });
-  };
-  
-
-  updateGraph = (id, coords, exits, prev = null, move = null) => {
-    const { revDirections } = this.state;
-
-    let graph = Object.assign({}, this.state.graph);
-    if (!this.state.graph[id]) {
-      let arr = [];
-      arr.push(coords);
-      const moves = {};
-      exits.forEach(exit => {
-        moves[exit] = '?';
-      });
-      arr.push(moves);
-      graph = { ...graph, [id]: arr };
-    }
-    if (prev !== null && move && prev !== id) {
-      graph[prev][1][move] = id;
-      graph[id][1][revDirections[move]] = prev;
-    }
-
-    localStorage.setItem('map', JSON.stringify(graph));
-    return graph;
-  };
-
-  parseCoords = coords => {
-    const coordsObject = {};
-    const coordsArr = coords.replace(/[{()}]/g, '').split(',');
-
-    coordsArr.forEach(coord => {
-      coordsObject['x'] = parseInt(coordsArr[0]);
-      coordsObject['y'] = parseInt(coordsArr[1]);
-    });
-
-    return coordsObject;
-  };
-
-  updateState = res => {
-    if('room_id' in res){
-      this.setState({
-        room_id: res.room_id,
-        exits: res.exits,
-        // coords: res.coordinates,
-        cooldown: res.cooldown,
-        players: res.players
-      });
-    }else{
-      console.log(res)
-    }
-  };
-
-  handleClick = () => {
-    // this.setState({ generating: true });
-    // this.interval = setInterval(this.traverseMap, this.state.cooldown * 1000);
-    this.travelMap();
-  };
-
-  handleInputChange = e => {
-    this.setState({ input: e.target.value });
-  };
-
+  // Method that calls api
   manualMove = e => {
     e.preventDefault();
     const { input } = this.state;
@@ -449,6 +335,137 @@ class GraphMap extends Component {
         return;
     }
   };
+  
+  // Method that calls api
+  pickUpTreasure = name => {
+    axios({
+      method: 'post',
+      url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/take/',
+      headers: {
+        Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
+      },
+      data: {
+        name
+      }
+    })
+      .then(res => {
+        console.log(res.data);
+        this.setState({
+          messages: [...res.data.messages],
+          items: [...res.data.items],
+          players: [...res.data.players],
+          cooldown: res.data.cooldown
+        }, () => this.timeOut(1000 * res.data.cooldown).then(() => this.status()));
+      })
+      .catch(err => { console.log("Error", err) });
+    };
+
+    // Method that calls api
+    sellTreasure = name => {
+      axios({
+        method: 'post',
+        url: 'https://lambda-treasure-hunt.herokuapp.com/api/adv/sell/',
+        headers: {
+          Authorization: 'Token 41a3f69a50a420f3cd78bc17def49bfeff971d5a'
+        },
+        data: {
+          name,
+          confirm: 'yes'
+        }
+      })
+        .then(res => {
+          console.log(res.data);
+          this.setState(
+            {
+              messages: [...res.data.messages],
+              cooldown: res.data.cooldown
+            }
+          );
+        })
+        .catch(err => {
+          console.log('There was an error.', err);
+        });
+    };
+
+  // picks up all the treasure in a room
+  pickUpAllTreasure = async () => {
+    const { items, cooldown } = this.state;
+    await this.timeOut(1000 * cooldown);
+    await this.pickUpTreasure(items[0]);
+    await this.timeOut(1000 * cooldown);
+  };
+
+  // sells everything in a player's inventory
+  sellEverything = async () => {
+    const { inventory, cooldown } = this.state;
+    for (let treasure of inventory) {
+      await this.timeOut(1000 * cooldown);
+      await this.sellTreasure(treasure);
+    }
+    await this.timeOut(1000 * cooldown);
+    this.status();
+  };
+
+  // updates the graph
+  updateGraph = (id, coords, exits, prev = null, move = null) => {
+    const { revDirections } = this.state;
+
+    let graph = Object.assign({}, this.state.graph);
+    if (!this.state.graph[id]) {
+      let arr = [];
+      arr.push(coords);
+      const moves = {};
+      exits.forEach(exit => {
+        moves[exit] = '?';
+      });
+      arr.push(moves);
+      graph = { ...graph, [id]: arr };
+    }
+    if (prev !== null && move && prev !== id) {
+      graph[prev][1][move] = id;
+      graph[id][1][revDirections[move]] = prev;
+    }
+
+    localStorage.setItem('map', JSON.stringify(graph));
+    return graph;
+  };
+
+  // gets the format for the coordinates from the graph
+  parseCoords = coords => {
+    const coordsObject = {};
+    const coordsArr = coords.replace(/[{()}]/g, '').split(',');
+
+    coordsArr.forEach(coord => {
+      coordsObject['x'] = parseInt(coordsArr[0]);
+      coordsObject['y'] = parseInt(coordsArr[1]);
+    });
+
+    return coordsObject;
+  };
+
+  // updates the state
+  updateState = res => {
+    if('room_id' in res){
+      this.setState({
+        room_id: res.room_id,
+        exits: res.exits,
+        // coords: res.coordinates,
+        cooldown: res.cooldown,
+        players: res.players
+      });
+    }else{
+      console.log(res)
+    }
+  };
+
+  handleClick = () => {
+    this.travelMap();
+  };
+
+  handleInputChange = e => {
+    this.setState({ input: e.target.value });
+  };
+
   
 
   render() {
